@@ -30,7 +30,7 @@ class ACF:
         for ind_col in self.X_train.columns.values:
             sens_train_model = None
             if self.X_train[ind_col].unique().size == 2:
-                sens_train_model = RandomForestClassifier(random_state=0, n_estimators=100, max_depth=10)
+                sens_train_model = LogisticRegression(random_state=0)
             else:
                 sens_train_model = LinearRegression()
             sens_train_model.fit(self.sens_train, self.X_train[ind_col])
@@ -41,7 +41,7 @@ class ACF:
 
             sens_test_model = None
             if self.X_train[ind_col].unique().size == 2:
-                sens_test_model = RandomForestClassifier(random_state=0, n_estimators=100, max_depth=10)
+                sens_test_model = LogisticRegression(random_state=0)
             else:
                 sens_test_model = LinearRegression()
             sens_test_model.fit(self.sens_test, self.X_test[ind_col])
@@ -52,7 +52,7 @@ class ACF:
         
         residual_train_df = pd.DataFrame(residuals_train)
         residual_test_df = pd.DataFrame(residuals_test)
-        self.fair_model = RandomForestClassifier(random_state=0, n_estimators=100, max_depth=10).fit(residual_train_df, self.y_train)
+        self.fair_model = LogisticRegression(random_state=0).fit(residual_train_df, self.y_train)
 
         self.y_pred_fair = self.fair_model.predict(residual_test_df)
         self.y_pred_prob_fair = self.fair_model.predict_proba(residual_test_df)
@@ -91,7 +91,7 @@ class ACF:
         self.cuf_model = RandomForestClassifier(random_state=0, n_estimators=100, max_depth=10).fit(residual_train_df, self.y_train)
 
         self.y_pred_cuf = self.cuf_model.predict(residual_test_df)
-        self.y_pred_prob_cuf = self.cuf_model.predict_proba(residual_test_df)
+        self.y_pred_prob_cuf = self.cuf_model.predict_proba(residual_test_df)[:,0]
 
     def score_cuf(self, choice, adv_class, disadv_class):
         tn_disadv, fp_disadv, fn_disadv, tp_disadv = confusion_matrix(self.y_test[self.sens_test_flipped[choice]==disadv_class], self.y_pred_cuf[self.sens_test_flipped[choice]==disadv_class]).ravel()
